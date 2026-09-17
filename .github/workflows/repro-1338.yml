@@ -1,0 +1,20 @@
+name: repro-1338
+on: push
+jobs:
+  repro:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --example repro_1338
+      - name: run
+        shell: bash
+        run: |
+          run() { echo "=== $*"; env "$@" ./target/debug/examples/repro_1338.exe > "log-$1-$2.txt" 2>&1; grep -E "RESULT" "log-$1-$2.txt" || tail -20 "log-$1-$2.txt"; }
+          run REPRO_MODE=syscmd TAO_EXP=none
+          run REPRO_MODE=tao TAO_EXP=none
+          run REPRO_MODE=tao TAO_EXP=skipmax
+          run REPRO_MODE=tao TAO_EXP=skipshow
+          run REPRO_MODE=tao TAO_EXP=skipstyle
+          run REPRO_MODE=tao TAO_EXP=skipmax,skipshow
+          for f in log-*.txt; do echo "##### $f"; head -80 "$f"; done

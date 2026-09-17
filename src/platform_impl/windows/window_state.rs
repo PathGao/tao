@@ -357,9 +357,11 @@ impl WindowFlags {
       }
     }
 
+    let exp = std::env::var("TAO_EXP").unwrap_or_default();
     if (diff.contains(WindowFlags::MAXIMIZED) || new.contains(WindowFlags::MAXIMIZED))
       // This is to avoid the window from flashing
       && !(new.contains(WindowFlags::MAXIMIZED) && !new.contains(WindowFlags::VISIBLE))
+      && !(exp.contains("skipmax") && new.contains(WindowFlags::MINIMIZED) && !diff.contains(WindowFlags::MAXIMIZED))
     {
       unsafe {
         let _ = ShowWindow(
@@ -409,7 +411,7 @@ impl WindowFlags {
       }
     }
 
-    if diff != WindowFlags::empty() {
+    if diff != WindowFlags::empty() && !(exp.contains("skipstyle") && new.contains(WindowFlags::MINIMIZED)) {
       let (mut style, style_ex) = new.to_window_styles();
       // Remove `WS_VISIBLE`, this is required for the `ShowWindow` below to work
       style &= !WS_VISIBLE;
@@ -452,7 +454,7 @@ impl WindowFlags {
 
     // This needs to be after the `SetWindowPos` above or there will be
     // a title bar flicker on undecorated windows's creation
-    if new.contains(WindowFlags::VISIBLE) {
+    if new.contains(WindowFlags::VISIBLE) && !(exp.contains("skipshow") && new.contains(WindowFlags::MINIMIZED)) {
       unsafe {
         let _ = ShowWindow(
           window,
