@@ -111,7 +111,7 @@ fn main() {
       }
       step += 1;
       if step == cycles * 4 {
-        println!("RESULT mode={mode} shadow={} exp={:?}", std::env::var("REPRO_SHADOW").is_ok(), flashes={} of {cycles}", std::env::var("TAO_EXP").ok(), unsafe { FLASHES });
+        println!("RESULT mode={mode} shadow={} exp={:?} flashes={} of {cycles}", std::env::var("REPRO_SHADOW").is_ok(), std::env::var("TAO_EXP").ok(), unsafe { FLASHES });
         *control_flow = ControlFlow::Exit;
         return;
       }
