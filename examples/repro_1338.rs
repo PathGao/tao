@@ -56,13 +56,14 @@ fn main() {
     CallNextHookEx(None, code, wparam, lparam)
   }
 
-  let mode = std::env::var("REPRO_MODE").unwrap_or_else(|_| "tao".into());
+  let mode = std::env::args().nth(1).or_else(|| std::env::var("REPRO_MODE").ok()).unwrap_or_else(|| "tao".into());
+  println!("mode = {mode}");
   let event_loop = EventLoop::new();
   let window = WindowBuilder::new()
     .with_decorations(false)
     .with_visible(false)
     .with_inner_size(LogicalSize::new(800.0, 600.0))
-    .with_undecorated_shadow(std::env::var("REPRO_SHADOW").is_ok())
+    .with_undecorated_shadow(true)
     .build(&event_loop)
     .unwrap();
   let raw = window.hwnd();
@@ -77,7 +78,7 @@ fn main() {
     SendMessageW(HWND(raw as _), WM_SYSCOMMAND, Some(WPARAM(cmd as usize)), Some(LPARAM(0)));
   };
   let mut step = 0u32;
-  let cycles = 15;
+  let cycles = 6;
 
   event_loop.run(move |event, _, control_flow| {
     if let Event::NewEvents(StartCause::Init | StartCause::ResumeTimeReached { .. }) = event {
@@ -111,11 +112,11 @@ fn main() {
       }
       step += 1;
       if step == cycles * 4 {
-        println!("RESULT mode={mode} shadow={} exp={:?} flashes={} of {cycles}", std::env::var("REPRO_SHADOW").is_ok(), std::env::var("TAO_EXP").ok(), unsafe { FLASHES });
+        println!("RESULT mode={mode} shadow={} exp={:?} flashes={} of {cycles}", true, std::env::var("TAO_EXP").ok(), unsafe { FLASHES });
         *control_flow = ControlFlow::Exit;
         return;
       }
-      *control_flow = ControlFlow::WaitUntil(Instant::now() + Duration::from_millis(700));
+      *control_flow = ControlFlow::WaitUntil(Instant::now() + Duration::from_millis(1500));
     }
   });
 }

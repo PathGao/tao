@@ -1,16 +1,19 @@
 name: repro-1338
 on: push
 jobs:
-  repro:
+  build:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      - run: cargo build --example repro_1338
-      - name: run
-        shell: bash
+      - run: cargo build --release --example repro_1338
+      - shell: bash
         run: |
-          run() { echo "=== $*"; env "$@" ./target/debug/examples/repro_1338.exe > "log-$1-$2-$3.txt" 2>&1; grep -E "RESULT" "log-$1-$2-$3.txt" || tail -20 "log-$1-$2-$3.txt"; }
-          run REPRO_SHADOW=1 REPRO_MODE=syscmd TAO_EXP=none
-          run REPRO_SHADOW=1 REPRO_MODE=tao TAO_EXP=none
-          for f in log-*.txt; do echo "##### $f"; head -40 "$f"; done
+          mkdir out
+          cp target/release/examples/repro_1338.exe out/
+          printf '@echo off\r\necho === set_minimized (tao) ===\r\nrepro_1338.exe tao\r\npause\r\n' > out/1-tao.bat
+          printf '@echo off\r\necho === WM_SYSCOMMAND ===\r\nrepro_1338.exe syscmd\r\npause\r\n' > out/2-syscmd.bat
+      - uses: actions/upload-artifact@v4
+        with:
+          name: repro-1338-windows
+          path: out/
