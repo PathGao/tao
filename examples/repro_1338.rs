@@ -14,7 +14,7 @@ fn main() {
     dpi::LogicalSize,
     event::{Event, StartCause},
     event_loop::{ControlFlow, EventLoop},
-    platform::windows::WindowExtWindows,
+    platform::windows::{WindowBuilderExtWindows, WindowExtWindows},
     window::WindowBuilder,
   };
   use windows::Win32::{
@@ -62,6 +62,7 @@ fn main() {
     .with_decorations(false)
     .with_visible(false)
     .with_inner_size(LogicalSize::new(800.0, 600.0))
+    .with_undecorated_shadow(std::env::var("REPRO_SHADOW").is_ok())
     .build(&event_loop)
     .unwrap();
   let raw = window.hwnd();
@@ -110,7 +111,7 @@ fn main() {
       }
       step += 1;
       if step == cycles * 4 {
-        println!("RESULT mode={mode} exp={:?} flashes={} of {cycles}", std::env::var("TAO_EXP").ok(), unsafe { FLASHES });
+        println!("RESULT mode={mode} shadow={} exp={:?}", std::env::var("REPRO_SHADOW").is_ok(), flashes={} of {cycles}", std::env::var("TAO_EXP").ok(), unsafe { FLASHES });
         *control_flow = ControlFlow::Exit;
         return;
       }
